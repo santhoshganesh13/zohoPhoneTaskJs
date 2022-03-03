@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phone Task</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Slab&display=swap" rel="stylesheet">
+    <style>
+        body,
+        select {
+            font-family: 'Roboto Mono', monospace;
+        }
+
+        img {
+            height: 30px;
+            width: 30px;
+        }
+
+        select {
+            padding: 2px;
+        }
+
+        #wizard {
+            background-color: rgb(238, 241, 241);
+            padding: 20px;
+            border: 4px solid black;
+        }
+
+        .btn,
+        #submitButton {
+            padding: 5px;
+            margin: 5px;
+        }
+
+        .inputbox {
+            padding: 2px;
+            margin: 10px;
+        }
+
+        #wizard3,
+        #wizard2 {
+            position: relative;
+            margin: 5px;
+            padding: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="wizard">
+        <div id="wizard1">
+            <div id="phoneMenu">
+                <label for="selectPhone">Select Phone : </label>
+                <select id="selectPhone" onchange="displaySimMenu()">
+                    <option selected hidden default>select</option>
+                    <option value="BasicModel">Basic Model</option>
+                    <option value="Smart Phone">Smart Phone</option>
+                </select>
+            </div><br>
+
+            <div id="simMenu" hidden>
+                <label for="simType">Select Sim Type : </label>
+                <select id="simType" onchange="getNumberInput()">
+                    <option selected hidden default value="select">Select</option>
+                    <option value="Single Sim">Single Sim</option>
+                    <option value="Dual Sim">Dual Sim</option>
+                </select>
+            </div><br>
+
+            <div id="modelMenu" hidden>
+                <label for="selectModel">Select Phone Model: </label>
+                <select id="selectModel" onclick="getExtraInput()">
+                    <option selected hidden default value="select">Select</option>
+                    <option value="IOS">IOS</option>
+                    <option value="Android">Android</option>
+                    <option value="Windows">Windows</option>
+                </select>
+            </div>
+
+            <div id="wizardInput">
+                <div id="phoneNumberInputBox"></div>
+                <div id="wizardInput1">
+                    <div id="emailInputBox"></div>
+                    <div id="extraInputBox"></div>
+                </div>
+                <button id="submitButton" onclick="onSubmit()">Submit</button><br>
+            </div>
+        </div>
+    </div>
+    <div id="wizard2"></div>
+    <div id="wizard3"></div>
+
+    <script>
+        var firstPhoneNumberValue;
+        var secondPhoneNumberValue;
+
+        function MainPhone(phoneNumber) {
+            this.phone_number = phoneNumber;
+        }
+        MainPhone.prototype.call = function (receiverNumber) {
+            return `Calling ${receiverNumber} from ${this.phone_number} `;
+        };
+        MainPhone.prototype.message = function (receiverNumber, message) {
+            return `Sending Message : " ${message} " to ${receiverNumber} from ${this.phone_number}`;
+        };
+
+        function BasicModel(phoneNumber) {
+            MainPhone.call(this, phoneNumber);
+        }
+        BasicModel.prototype = new MainPhone();
+        BasicModel.prototype.constructor = BasicModel;
+
+        function Single(phoneNumber) {
+            BasicModel.call(this, phoneNumber);
+        }
+        Single.prototype = new BasicModel();
+        Single.prototype.constructor = Single;
+
+        function Dual(firstPhoneNumber, secondPhoneNumber) {
+            this.firstPhoneNumber = firstPhoneNumber;
+            this.secondPhoneNumber = secondPhoneNumber;
+        }
+        Dual.prototype = new BasicModel();
+        Dual.prototype.constructor = Dual;
+
+        Dual.prototype.call = function (receiverNumber) {
+            var selectedsim = prompt("Sim 1 or 2 ?");
+            (selectedsim == 1) ? (this.phone_number = this.firstPhoneNumber) : (this.phone_number = this.secondPhoneNumber);
+            return BasicModel.prototype.call.call(this, receiverNumber);
+        };
+        Dual.prototype.message = function (receiverNumber, messageBody) {
+            var selectedsim = prompt("Sim 1 or 2 ?");
+            (selectedsim == 1) ? (this.phone_number = this.firstPhoneNumber) : (this.phone_number = this.secondPhoneNumber);
+            return BasicModel.prototype.message.call(this, receiverNumber, messageBody);
+        };
+
+        function Smartphone(emailid, phoneNumber) {
+            MainPhone.call(this, phoneNumber);
+            this.emailid = emailid;
+        }
+
+        Smartphone.prototype = new MainPhone();
+        Smartphone.prototype.constructor = Smartphone;
+        Smartphone.prototype.email = function (to_emailid, subject, body) {
+            return `Mail is sending from ${this.emailid} to ${to_emailid} Subject : ${subject} Body : ${body}`;
+        };
+
+        function IOS(facetimeid, emailid, phoneNumber) {
+            Smartphone.call(this, emailid, phoneNumber);
+            this.facetimeid = facetimeid;
+        }
+        IOS.prototype = new Smartphone();
+        IOS.prototype.constructor = IOS;
+        IOS.prototype.facetime = function (to_facetimeid) {
+            return `Calling to ${to_facetimeid} from ${this.facetimeid} via Face time.`;
+        };
+
+        function Android(duoid, emailid, phoneNumber) {
+            Smartphone.call(this, emailid, phoneNumber);
+            this.duoid = duoid;
+        }
+        Android.prototype = new Smartphone();
+        Android.prototype.constructor = Android;
+        Android.prototype.duo = function (to_duoid) {
+            return `Calling to ${to_duoid} from ${this.duoid} via duo `;
+        };
+
+        function Windows(skypeid, emailid, phoneNumber) {
+            Smartphone.call(this, emailid, phoneNumber);
+            this.skypeid = skypeid;
+        }
+
+        Windows.prototype = new Smartphone();
+        Windows.prototype.constructor = Windows;
+        Windows.prototype.skype = function (to_skypeid) {
+            return `Calling to ${to_skypeid} from ${this.skypeid} via Skype`;
+        };
+
+
+        function displaySimMenu() {
+            document.getElementById("simMenu").style.display = "block";
+            document.getElementById("modelMenu").style.display = "none";
+            document.getElementById("wizardInput1").style.display = "none";
+            document.getElementById("wizardInput").style.display = "none";
+            var selectedValue = document.getElementById("selectPhone").value;
+            if (selectedValue == "BasicModel" && document.getElementById("simType").value != "select") {
+                getNumberInput();
+            }
+            if (selectedValue == "Smart Phone") {
+                document.getElementById("modelMenu").style.display = "block";
+                document.getElementById("wizardInput1").style.display = "block";
+                document.getElementById("simMenu").style.display = "none";
+                document.getElementById("wizardInput").style.display = "none";
+                var selectedValue1 = document.getElementById("selectModel").value;
+                if (selectedValue1 != null && document.getElementById("selectModel").value != "select") {
+                    getExtraInput();
+                }
+            }
+        }
+
+        function getNumberInput() {
+            document.getElementById("wizardInput").style.display = "block";
+            var selectedValue = document.getElementById("simType").value;
+            (selectedValue == "Dual Sim") ?
+                (document.getElementById("phoneNumberInputBox").innerText = "Enter your phone numbers : ",
+                    createTextBox("firstPhoneNumber", "Phone number 1", "phoneNumberInputBox"),
+                    createTextBox("secondPhoneNumber", "Phone number 2", "phoneNumberInputBox")) :
+                (document.getElementById("phoneNumberInputBox").innerText = "Mobile number : ",
+                    createTextBox("phoneNumber", "Phone Number", "phoneNumberInputBox"));
+        }
+
+        function getExtraInput() {
+            document.getElementById("wizardInput").style.display = "block";
+            var selectedValue = document.getElementById("selectModel").value;
+            document.getElementById("phoneNumberInputBox").innerText = "Mobile : ";
+            createTextBox("phoneNumber", "Phone Number", "phoneNumberInputBox");
+            document.getElementById("emailInputBox").innerText = "Email Id : ";
+            createTextBox("emailid", "Email Id", "emailInputBox");
+            switch (selectedValue) {
+                case "IOS":
+                    document.getElementById("extraInputBox").innerText = "Face Time Id :";
+                    createTextBox("facetimeid", "FaceTime Id", "extraInputBox");
+                    break;
+                case "Android":
+                    document.getElementById("extraInputBox").innerText = "Duo Id:";
+                    createTextBox("duoid", "Duo Id", "extraInputBox");
+                    break;
+                case "Windows":
+                    document.getElementById("extraInputBox").innerText = "Skype Id :";
+                    createTextBox("skypeid", "Skype Id", "extraInputBox");
+                    break;
+            }
+        }
+
+        function onSubmit() {
+            var selectedValue = document.getElementById("selectPhone").value;
+            //basic
+            if (selectedValue == "BasicModel") {
+                var selectedSimValue = document.getElementById("simType").value;
+                if (selectedSimValue == "Dual Sim") {
+                    firstPhoneNumberValue = document.getElementById("firstPhoneNumber").value;
+                    secondPhoneNumberValue = document.getElementById("secondPhoneNumber").value;
+                    createMyObjectforDual(firstPhoneNumberValue, secondPhoneNumberValue);
+                } else {
+                    var phoneNumberValue = document.getElementById("phoneNumber").value;
+                    createMyObjectForSingle(phoneNumberValue);
+                }
+            }
+            //smartphone
+            else {
+                var emailid = document.getElementById("emailid").value;
+                var selectedSimValue = document.getElementById("simType").value;
+                var phoneNumberValue = document.getElementById("phoneNumber").value;
+                var osType = document.getElementById("selectModel").value;
+                switch (osType) {
+                    case "IOS":
+                        faceTimeId = document.getElementById("facetimeid").value;
+                        createMyObjectForSmart("IOS", phoneNumberValue, emailid, faceTimeId);
+                        break;
+                    case "Android":
+                        duoid = document.getElementById("duoid").value;
+                        createMyObjectForSmart("Android", phoneNumberValue, emailid, duoid);
+                        break;
+                    case "Windows":
+                        skypeid = document.getElementById("skypeid").value;
+                        createMyObjectForSmart("Windows", phoneNumberValue, emailid, skypeid);
+                        break;
+                }
+            }
+        }
+        var Myobject;
+        //basic model
+        //single sim
+        function createMyObjectForSingle(phoneNumberValue) {
+            Myobject = new Single(phoneNumberValue);
+            let titleName = document.getElementById("wizard");
+            titleName.innerHTML = `My Single Sim Mobile : `;
+            uiCallButton();
+            uiMessageButton();
+        }
+        //dual sim
+        function createMyObjectforDual(firstPhoneNumberValue, secondPhoneNumberValue) {
+            Myobject = new Dual(firstPhoneNumberValue, secondPhoneNumberValue);
+            let titleName = document.getElementById("wizard");
+            titleName.innerHTML = `My Dual Sim Mobile : `;
+            uiCallButton();
+            uiMessageButton();
+        }
+        //smart phone
+        function createMyObjectForSmart(type, phoneNumberValue, emailid, extraId) {
+            let titleName = document.getElementById("wizard");
+            titleName.innerHTML = `My ${type} Mobile : `;
+            switch (type) {
+                case "IOS":
+                    Myobject = new IOS(extraId, emailid, phoneNumberValue);
+                    uiCallButton();
+                    uiMessageButton();
+                    uiMailButton();
+                    uiExtraButton("facetime", "Face Time");
+
+                    break;
+
+                case "Android":
+                    Myobject = new Android(extraId, emailid, phoneNumberValue);
+                    uiCallButton();
+                    uiMessageButton();
+                    uiMailButton();
+                    uiExtraButton("duo", "Duo");
+
+                    break;
+
+                case "Windows":
+                    Myobject = new Windows(extraId, emailid, phoneNumberValue);
+                    uiCallButton();
+                    uiMessageButton();
+                    uiMailButton();
+                    uiExtraButton("skype", "Skype");
+
+                    break;
+            }
+        }
+        //call Function
+        function uiCallButton() {
+            var btn = document.createElement("button");
+            var Logo = document.createElement("img");
+            Logo.src = "callIcon.png";
+            btn.appendChild(Logo);
+            btn.setAttribute("class", "btn");
+            btn.setAttribute("onclick", "callDisplay()");
+            document.getElementById("wizard").appendChild(btn);
+        }
+
+        function callDisplay() {
+            document.getElementById("wizard").style.display = "none";
+            var wizard2 = document.getElementById("wizard2");
+            wizard2.innerText = "receiver number  :";
+            var textBox = document.createElement("input");
+            textBox.setAttribute("type", "text");
+            textBox.setAttribute("placeholder", "receiver number");
+            textBox.setAttribute("class", "inputbox");
+            textBox.setAttribute("id", "receiverTextBoxInputId");
+            wizard2.append(textBox);
+            var btn = document.createElement("button");
+            btn.innerText = "Call";
+            btn.setAttribute("class", "btn");
+            btn.setAttribute("onclick", "call()");
+            wizard2.appendChild(btn);
+        }
+
+        function call() {
+            var receiverMobileNumber = document.getElementById("receiverTextBoxInputId").value;
+            if (isEmpty(receiverMobileNumber)) {
+                triggerAlert();
+            } else {
+                document.getElementById("wizard3").innerText = Myobject.call(receiverMobileNumber);
+                uiBackButton();
+
+            }
+        }
+        //message Function
+
+        function uiMessageButton() {
+            var btn = document.createElement("button");
+            var Logo = document.createElement("img");
+            Logo.src = "message.png";
+            btn.appendChild(Logo);
+            btn.setAttribute("class", "btn");
+            btn.setAttribute("onclick", "messageDisplay()");
+            document.getElementById("wizard").appendChild(btn);
+        }
+
+        function messageDisplay() {
+            document.getElementById("wizard").style.display = "none";
+            var wizard2 = document.getElementById("wizard2");
+            wizard2.innerText = "Enter the inputs : ";
+            var textBox = document.createElement("input");
+            textBox.setAttribute("type", "text");
+            textBox.setAttribute("placeholder", "receiver number");
+            textBox.setAttribute("class", "inputbox");
+            textBox.setAttribute("id", "receiverTextBoxInputIdCall");
+            wizard2.append(textBox);
+            var textBox1 = document.createElement("input");
+            textBox1.setAttribute("type", "text");
+            textBox1.setAttribute("placeholder", "message Body");
+            textBox1.setAttribute("class", "inputbox");
+            textBox1.setAttribute("id", "messageTextBoxInputIdMsg");
+            wizard2.append(textBox1);
+            var btn = document.createElement("button");
+            btn.innerText = "message";
+            btn.setAttribute("class", "btn");
+            btn.setAttribute("onclick", "message()");
+            wizard2.appendChild(btn);
+        }
+
+        function message() {
+            var receiverMobileNumber = document.getElementById("receiverTextBoxInputIdCall").value;
+            var messagecontent = document.getElementById("messageTextBoxInputIdMsg").value;
+            if (isEmpty(receiverMobileNumber)) {
+                triggerAlert();
+            } else {
+                document.getElementById("wizard3").innerText = Myobject.message(receiverMobileNumber, messagecontent);
+                uiBackButton();
+
+            }
+
+        }
+
+        //Mail Function
+
+        function uiMailButton() {
+            var btn = document.createElement("button");
+            var Logo = document.createElement("img");
+            Logo.src = "mail.png";
+            btn.appendChild(Logo);
+            btn.setAttribute("class", "btn");
+            btn.setAttribute("onclick", "mailDisplay()");
+            document.getElementById("wizard").appendChild(btn);
+        }
+
+        function mailDisplay() {
+            document.getElementById("wizard").style.display = "none";
+
+            wizard2.innerText = "Enter the inputs : ";
+            var textBox = document.createElement("input");
+            textBox.setAttribute("type", "text");
+            textBox.setAttribute("placeholder", "receiver mail");
+            textBox.setAttribute("class", "inputbox");
+            textBox.setAttribute("id", "receiverTextBoxInputIdMail");
+            wizard2.append(textBox);
+            var textBox1 = document.createElement("input");
+            textBox1.setAttribute("type", "text");
+            textBox1.setAttribute("placeholder", "Subject");
+            textBox1.setAttribute("class", "inputbox");
+            textBox1.setAttribute("id", "SubjectTextBoxInputId");
+            wizard2.append(textBox1);
+            var textBox2 = document.createElement("input");
+            textBox2.setAttribute("type", "text");
+            textBox2.setAttribute("placeholder", "message Body");
+            textBox2.setAttribute("class", "inputbox");
+            textBox2.setAttribute("id", "BodyTextBoxInputId");
+            wizard2.append(textBox2);
+            var btn = document.createElement("button");
+            btn.innerText = "E-Mail";
+            btn.setAttribute("class", "btn");
+            btn.setAttribute("onclick", "mail()");
+            wizard2.appendChild(btn);
+        }
+
+        function mail() {
+            var receiverTextBoxInputIdMail = document.getElementById("receiverTextBoxInputIdMail").value;
+            var SubjectTextBoxInputId = document.getElementById("SubjectTextBoxInputId").value;
+            var BodyTextBoxInputId = document.getElementById("BodyTextBoxInputId").value;
+            if (isEmpty(receiverTextBoxInputIdMail) || isEmpty(SubjectTextBoxInputId)) {
+                triggerAlert();
+            } else {
+                document.getElementById("wizard3").innerText = Myobject.email(receiverTextBoxInputIdMail, SubjectTextBoxInputId, BodyTextBoxInputId);
+                uiBackButton();
+
+            }
+        }
+
+
+        // Extras UI button
+
+        function uiExtraButton(extra, placeholder) {
+            var btn = document.createElement("button");
+            btn.setAttribute("class", "btn");
+            btn.setAttribute("onclick", extra + "Display" + "()");
+            var Logo = document.createElement("img");
+            switch (extra) {
+                case "duo":
+                    Logo.src = "duo.png";
+                    btn.appendChild(Logo);
+                    break;
+                case "facetime":
+                    Logo.src = "facetime.png"
+                    btn.appendChild(Logo);
+                    break;
+                case "skype":
+                    Logo.src = "skype.png";
+                    btn.appendChild(Logo);
+                    break;
+            }
+            document.getElementById("wizard").appendChild(btn);
+        }
+        //Face Time Function
+
+        function facetimeDisplay() {
+            document.getElementById("wizard").style.display = "none";
+            var wizard2 = document.getElementById("wizard2");
+            wizard2.innerText = "Face Time Id : ";
+            var textBox = document.createElement("input");
+            textBox.setAttribute("type", "text");
+            textBox.setAttribute("placeholder", "Face Time ID");
+            textBox.setAttribute("class", "inputbox");
+            textBox.setAttribute("id", "reciverFaceTimeId");
+            wizard2.append(textBox);
+            var btn = document.createElement("button");
+            btn.innerText = "Face Time";
+            btn.setAttribute("class", "btn");
+            btn.setAttribute("onclick", "facetime()");
+            wizard2.appendChild(btn);
+        }
+
+        function facetime() {
+            var reciverFaceTimeId = document.getElementById("reciverFaceTimeId").value;
+            if (isEmpty(reciverFaceTimeId)) {
+                alert("Invalid Input(s)");
+            } else {
+                wizard3.innerText = Myobject.facetime(reciverFaceTimeId);
+                uiBackButton();
+
+            }
+
+        }
+        //Duo Function
+
+        function duoDisplay() {
+            document.getElementById("wizard").style.display = "none";
+            var wizard2 = document.getElementById("wizard2");
+
+            wizard2.innerText = "Duo Id : ";
+            var textBox = document.createElement("input");
+            textBox.setAttribute("type", "text");
+            textBox.setAttribute("placeholder", "Duo ID");
+            textBox.setAttribute("class", "inputbox");
+            textBox.setAttribute("id", "reciverDuoId");
+            wizard2.append(textBox);
+            var btn = document.createElement("button");
+            btn.innerText = "Duo";
+            btn.setAttribute("class", "btn");
+            btn.setAttribute("onclick", "duo()");
+            wizard2.appendChild(btn);
+        }
+
+        function duo() {
+            var reciverDuoId = document.getElementById("reciverDuoId").value;
+            if (isEmpty(reciverDuoId)) {
+                alert("Invalis Input(s)");
+            } else {
+                wizard3.innerText = Myobject.duo(reciverDuoId);
+                uiBackButton();
+
+            }
+
+        }
+        //Skype Function
+
+        function skypeDisplay() {
+            document.getElementById("wizard").style.display = "none";
+            var wizard2 = document.getElementById("wizard2");
+            wizard2.innerText = "Skype Id : ";
+            var textBox = document.createElement("input");
+            textBox.setAttribute("type", "text");
+            textBox.setAttribute("placeholder", "Skype ID");
+            textBox.setAttribute("class", "inputbox");
+            textBox.setAttribute("id", "reciverSkypeId");
+            wizard2.append(textBox);
+            var btn = document.createElement("button");
+            btn.innerText = "Skype";
+            btn.setAttribute("class", "btn");
+            btn.setAttribute("onclick", "skype()");
+            wizard2.appendChild(btn);
+        }
+
+        function skype() {
+            var reciverSkypeId = document.getElementById("reciverSkypeId").value;
+            if (isEmpty(reciverSkypeId)) {
+                alert("Invalid Input");
+            } else {
+                wizard3.innerText = Myobject.skype(reciverSkypeId);
+                uiBackButton();
+
+            }
+
+        }
+        //Back Button Function
+
+        function uiBackButton() {
+            var wizard2 = document.getElementById("wizard2");
+            if ((wizard2.querySelectorAll("button").length) == 1) {
+                var backButton = document.createElement("button");
+                backButton.innerText = "back";
+                backButton.setAttribute("class", "btn");
+                backButton.setAttribute("onclick", "onBack()");
+                wizard2.append(backButton);
+
+            } else {
+                return;
+            }
+
+        }
+
+        function onBack() {
+            var wizard = document.getElementById("wizard");
+            var wizard3 = document.getElementById("wizard3");
+            var wizard2 = document.getElementById("wizard2");
+            wizard.style.display = "block";
+            wizard3.innerHTML = '';
+            wizard2.innerHTML = '';
+        }
+
+        //action functions
+
+        function createTextBox(id, placeholder, space) {
+            var textBox = document.createElement("input");
+            textBox.setAttribute("type", "text");
+            textBox.setAttribute("placeholder", placeholder);
+            textBox.setAttribute("class", "inputbox");
+            textBox.setAttribute("id", id);
+            var space = document.getElementById(space);
+            space.appendChild(textBox);
+        }
+
+        function isEmpty(inputBoxValue) {
+            if (inputBoxValue == null || inputBoxValue == "") {
+                return true;
+            } else {
+                return false;
+            }
+        }
+
+        function triggerAlert() {
+            return alert("Invalid Inputs");
+        }
+    </script>
+</body>
+
+</html>
